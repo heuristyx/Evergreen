@@ -30,14 +30,8 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>lib\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Sirenix.Serialization">
-      <HintPath>lib\Sirenix.Serialization.dll</HintPath>
-    </Reference>
     <Reference Include="MMHOOK_Everhood">
       <HintPath>lib\MMHOOK_Everhood.dll</HintPath>
-    </Reference>
-    <Reference Include="DOTween">
-      <HintPath>lib\DOTween.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
