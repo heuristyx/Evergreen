@@ -4,7 +4,6 @@ using BepInEx.Logging;
 namespace Evergreen;
 
 [BepInPlugin(Guid, Name, Version)]
-[BepInDependency("Bepinex.Monomod.HookGenPatcher")]
 [BepInProcess("Everhood.exe")]
 public class Evergreen : BaseUnityPlugin {
     public const string Guid = "com.heuristyx.plugins.evergreen";
