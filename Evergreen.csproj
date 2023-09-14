@@ -36,5 +36,8 @@
     <Reference Include="MMHOOK_Everhood">
       <HintPath>lib\MMHOOK_Everhood.dll</HintPath>
     </Reference>
+    <Reference Include="DOTween">
+      <HintPath>lib\DOTween.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
