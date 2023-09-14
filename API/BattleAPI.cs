@@ -1,3 +1,4 @@
+using Everhood.Battle;
 using System;
 
 namespace Evergreen;
@@ -17,9 +18,11 @@ public static class BattleAPI {
   }
 
   public static void HookOnDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, Everhood.Battle.BattlePlayer self, int damage) {
-    var args = new DamageEventArgs { damage = damage };
-    foreach (EventHandler<DamageEventArgs> e in OnDamage.GetInvocationList()) e?.Invoke(self, args);
-    damage = args.damage;
+    if (OnDamage != null) {
+      var args = new DamageEventArgs { damage = damage };
+      foreach (EventHandler<DamageEventArgs> e in OnDamage.GetInvocationList()) e?.Invoke(self, args);
+      damage = args.damage;
+    }
 
     orig(self, damage);
   }
