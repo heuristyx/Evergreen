@@ -1,5 +1,8 @@
 using System;
+using Everhood;
 using Everhood.Battle;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace Evergreen;
 
@@ -9,23 +12,24 @@ public static class BattleAPI {
     public int damage { get; set; }
   }
 
-  public class JumpEventArgs : EventArgs {
-    public float axis { get; set; }
-  }
-
   // Event handlers
   public static event EventHandler<DamageEventArgs> OnTakeDamage;
   public static event EventHandler<DamageEventArgs> OnDealDamage;
-  public static event EventHandler OnJump;
   public static event EventHandler OnBattleUpdate;
+  public static event EventHandler OnBattleStart;
+  public static event EventHandler OnKill;  
+  public static event EventHandler OnLose;
+  public static event EventHandler OnJump;
 
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
-    // Add events to hooks
     On.Everhood.Battle.BattlePlayer.Damage += HookOnTakeDamage;
     On.Everhood.Battle.BattleEnemy.Damage += HookOnDealDamage;
     On.Everhood.Battle.BattlePlayer.Update += HookOnBattleUpdate;
+    On.Everhood.Battle.BattlePlayer.Awake += HookOnBattleStart;
+    On.Everhood.Battle.BattleGameOverController.GameOver += HookOnLose;
+    IL.Everhood.Battle.BattleEnemyHealthObserver.Update += HookOnKill;
     On.Everhood.Battle.PlayerVerticalMovement.Jump += HookOnJump;
   }
 
@@ -46,13 +50,37 @@ public static class BattleAPI {
     orig(self, damage);
   }
 
-  internal static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
-    OnJump?.Invoke(self, EventArgs.Empty);
+  internal static void HookOnBattleUpdate(On.Everhood.Battle.BattlePlayer.orig_Update orig, BattlePlayer self) {
+    OnBattleUpdate?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnBattleUpdate(On.Everhood.Battle.BattlePlayer.orig_Update orig, BattlePlayer self) {
-    OnBattleUpdate?.Invoke(self, EventArgs.Empty);
+  internal static void HookOnBattleStart(On.Everhood.Battle.BattlePlayer.orig_Awake orig, BattlePlayer self) {
+    orig(self);
+
+    OnBattleStart?.Invoke(self, EventArgs.Empty);
+  }
+
+  internal static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self) {
+    OnLose?.Invoke(self, EventArgs.Empty);
+
+    orig(self);
+  }
+
+  internal static void HookOnKill(ILContext il) {
+    ILCursor c = new ILCursor(il);
+    bool found = c.TryGotoNext(MoveType.Before, i => i.MatchCallvirt(typeof(EventCommandsGroupExecutor).GetMethod(nameof(EventCommandsGroupExecutor.Execute))));
+
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<BattleEnemyHealthObserver>>((obs) => {
+      OnKill?.Invoke(obs, EventArgs.Empty);
+    });
+  }
+
+  internal static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
+    OnJump?.Invoke(self, EventArgs.Empty);
+
+    orig(self);
   }
 }

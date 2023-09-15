@@ -33,5 +33,8 @@
     <Reference Include="MMHOOK_Everhood">
       <HintPath>lib\MMHOOK_Everhood.dll</HintPath>
     </Reference>
+    <Reference Include="Sirenix.Serialization">
+      <HintPath>lib\Sirenix.Serialization.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
