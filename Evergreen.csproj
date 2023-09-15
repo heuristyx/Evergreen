@@ -30,11 +30,17 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>lib\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.TextMeshPro">
+      <HintPath>lib\Unity.TextMeshPro.dll</HintPath>
+    </Reference>
     <Reference Include="MMHOOK_Everhood">
       <HintPath>lib\MMHOOK_Everhood.dll</HintPath>
     </Reference>
     <Reference Include="Sirenix.Serialization">
       <HintPath>lib\Sirenix.Serialization.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>lib\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

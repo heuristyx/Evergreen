@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Logging;
+using Everhood;
 using Everhood.Battle;
+using UnityEngine;
 
 namespace Evergreen;
 
@@ -16,7 +19,10 @@ public class Evergreen : BaseUnityPlugin {
   private void Awake() {
     Log = BepInEx.Logging.Logger.CreateLogSource("Evergreen");
 
-    // Init APIs
+    BattleAPI.OnBattleStart += (object sender, EventArgs args) => {
+      Text.Init();
+    };
+
     BattleAPI.Init();
     Locking.Init();
 

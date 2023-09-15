@@ -1,8 +1,9 @@
 using System;
 using Everhood;
 using Everhood.Battle;
-using Mono.Cecil.Cil;
-using MonoMod.Cil;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 
 namespace Evergreen;
 
@@ -29,7 +30,7 @@ public static class BattleAPI {
     On.Everhood.Battle.BattlePlayer.Update += HookOnBattleUpdate;
     On.Everhood.Battle.BattlePlayer.Awake += HookOnBattleStart;
     On.Everhood.Battle.BattleGameOverController.GameOver += HookOnLose;
-    IL.Everhood.Battle.BattleEnemyHealthObserver.Update += HookOnKill;
+    On.Everhood.KillModeEvents.NpcKilled += HookOnKill;
     On.Everhood.Battle.PlayerVerticalMovement.Jump += HookOnJump;
   }
 
@@ -68,14 +69,10 @@ public static class BattleAPI {
     orig(self);
   }
 
-  internal static void HookOnKill(ILContext il) {
-    ILCursor c = new ILCursor(il);
-    bool found = c.TryGotoNext(MoveType.Before, i => i.MatchCallvirt(typeof(EventCommandsGroupExecutor).GetMethod(nameof(EventCommandsGroupExecutor.Execute))));
+  internal static void HookOnKill(On.Everhood.KillModeEvents.orig_NpcKilled orig, KillModeEvents self) {
+    OnKill?.Invoke(self, EventArgs.Empty);
 
-    c.Emit(OpCodes.Ldarg_0);
-    c.EmitDelegate<Action<BattleEnemyHealthObserver>>((obs) => {
-      OnKill?.Invoke(obs, EventArgs.Empty);
-    });
+    orig(self);
   }
 
   internal static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
