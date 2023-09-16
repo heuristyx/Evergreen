@@ -4,6 +4,7 @@ using Everhood.Battle;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
+using Everhood.Chart;
 
 namespace Evergreen;
 
@@ -21,6 +22,8 @@ public static class BattleAPI {
   public static event EventHandler OnKill;  
   public static event EventHandler OnLose;
   public static event EventHandler OnJump;
+  public static event EventHandler OnAbsorbNote;
+  public static event EventHandler OnShootDeflect;
 
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
@@ -32,6 +35,9 @@ public static class BattleAPI {
     On.Everhood.Battle.BattleGameOverController.GameOver += HookOnLose;
     On.Everhood.KillModeEvents.NpcKilled += HookOnKill;
     On.Everhood.Battle.PlayerVerticalMovement.Jump += HookOnJump;
+    On.AbsorbBehaviour.NotifyOnAbsorbSuccess += HookOnAbsorbNote;
+    On.AbsorbBehaviour.NotifyOnAbsorbTallSuccess += HookOnAbsorbTallNote;
+    On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
   }
 
   // Hooks
@@ -79,5 +85,23 @@ public static class BattleAPI {
     OnJump?.Invoke(self, EventArgs.Empty);
 
     orig(self);
+  }
+
+  internal static void HookOnAbsorbNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbSuccess orig, AbsorbBehaviour self) {
+    OnAbsorbNote?.Invoke(self, EventArgs.Empty);
+
+    orig(self);
+  }
+
+  internal static void HookOnAbsorbTallNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbTallSuccess orig, AbsorbBehaviour self) {
+    OnAbsorbNote?.Invoke(self, EventArgs.Empty);
+
+    orig(self);
+  }
+
+  internal static void HookOnShootDeflect(On.Everhood.ShootDeflectiveProjectileEventCommand.orig_ShootDeflect orig, ShootDeflectiveProjectileEventCommand self, bool projectileDeflectedIsUnjumpable) {
+    OnShootDeflect?.Invoke(self, EventArgs.Empty);
+
+    orig(self, projectileDeflectedIsUnjumpable);
   }
 }

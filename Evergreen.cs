@@ -21,6 +21,7 @@ public class Evergreen : BaseUnityPlugin {
 
     BattleAPI.OnBattleStart += (object sender, EventArgs args) => {
       Text.Init();
+      Text.DrawToConsole("Ingame console initialized");
     };
 
     BattleAPI.Init();

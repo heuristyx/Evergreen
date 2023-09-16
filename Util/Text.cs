@@ -30,7 +30,7 @@ public static class Text {
 
   public static GameObject DrawText(string text, TextAlignmentOptions alignment) {
     var to = CreateTextObject();
-    var tm = to.AddComponent<TextMeshProUGUI>();
+    var tm = to.GetComponent<TextMeshProUGUI>();
     tm.alignment = alignment;
     tm.text = text;
     tm.fontSize = 12;
