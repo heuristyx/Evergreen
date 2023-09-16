@@ -41,7 +41,7 @@ public static class BattleAPI {
   }
 
   // Hooks
-  internal static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage) {
+  private static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage) {
     var args = new DamageEventArgs { damage = damage };
     OnTakeDamage?.Invoke(self, args);
     damage = args.damage;
@@ -49,7 +49,7 @@ public static class BattleAPI {
     orig(self, damage);
   }
 
-  internal static void HookOnDealDamage(On.Everhood.Battle.BattleEnemy.orig_Damage orig, BattleEnemy self, int damage) {
+  private static void HookOnDealDamage(On.Everhood.Battle.BattleEnemy.orig_Damage orig, BattleEnemy self, int damage) {
     var args = new DamageEventArgs { damage = damage };
     OnDealDamage?.Invoke(self, args);
     damage = args.damage;
@@ -57,49 +57,49 @@ public static class BattleAPI {
     orig(self, damage);
   }
 
-  internal static void HookOnBattleUpdate(On.Everhood.Battle.BattlePlayer.orig_Update orig, BattlePlayer self) {
+  private static void HookOnBattleUpdate(On.Everhood.Battle.BattlePlayer.orig_Update orig, BattlePlayer self) {
     OnBattleUpdate?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnBattleStart(On.Everhood.Battle.BattlePlayer.orig_Awake orig, BattlePlayer self) {
+  private static void HookOnBattleStart(On.Everhood.Battle.BattlePlayer.orig_Awake orig, BattlePlayer self) {
     orig(self);
 
     OnBattleStart?.Invoke(self, EventArgs.Empty);
   }
 
-  internal static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self) {
+  private static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self) {
     OnLose?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnKill(On.Everhood.KillModeEvents.orig_NpcKilled orig, KillModeEvents self) {
+  private static void HookOnKill(On.Everhood.KillModeEvents.orig_NpcKilled orig, KillModeEvents self) {
     OnKill?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
+  private static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
     OnJump?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnAbsorbNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbSuccess orig, AbsorbBehaviour self) {
+  private static void HookOnAbsorbNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbSuccess orig, AbsorbBehaviour self) {
     OnAbsorbNote?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnAbsorbTallNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbTallSuccess orig, AbsorbBehaviour self) {
+  private static void HookOnAbsorbTallNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbTallSuccess orig, AbsorbBehaviour self) {
     OnAbsorbNote?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  internal static void HookOnShootDeflect(On.Everhood.ShootDeflectiveProjectileEventCommand.orig_ShootDeflect orig, ShootDeflectiveProjectileEventCommand self, bool projectileDeflectedIsUnjumpable) {
+  private static void HookOnShootDeflect(On.Everhood.ShootDeflectiveProjectileEventCommand.orig_ShootDeflect orig, ShootDeflectiveProjectileEventCommand self, bool projectileDeflectedIsUnjumpable) {
     OnShootDeflect?.Invoke(self, EventArgs.Empty);
 
     orig(self, projectileDeflectedIsUnjumpable);

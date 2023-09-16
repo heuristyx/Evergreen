@@ -9,7 +9,8 @@ public static class Locking {
   public enum LockType {
     Score,
     BattleStars,
-    Achievements
+    Achievements,
+    All
   }
 
   public class Lock {
@@ -37,7 +38,7 @@ public static class Locking {
   }
 
   public static List<Lock> GetLocks(LockType lockType) {
-    return locks.FindAll(l => l.LockType == lockType);
+    return locks.FindAll(l => l.LockType == lockType || l.LockType == LockType.All);
   }
 
   // Locking

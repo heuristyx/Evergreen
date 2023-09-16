@@ -23,7 +23,7 @@ public static class ChartAPI {
   }
 
   // Hooks
-  internal static void HookOnNoteSpawn(On.Everhood.Chart.NoteEventHandler.orig_OnNote orig, NoteEventHandler self, Everhood.Chart.Note note) {
+  private static void HookOnNoteSpawn(On.Everhood.Chart.NoteEventHandler.orig_OnNote orig, NoteEventHandler self, Everhood.Chart.Note note) {
     var args = new NoteEventArgs { note = note };
     OnNoteSpawn?.Invoke(self, args);
     note = args.note;
@@ -31,7 +31,7 @@ public static class ChartAPI {
     orig(self, note);
   }
 
-  internal static void HookOnSectionStart(On.Everhood.Chart.SectionEventHandler.orig_OnSection orig, SectionEventHandler self, Everhood.Chart.Section section) {
+  private static void HookOnSectionStart(On.Everhood.Chart.SectionEventHandler.orig_OnSection orig, SectionEventHandler self, Everhood.Chart.Section section) {
     var args = new SectionEventArgs { section = section };
     OnSectionStart?.Invoke(self, args);
     section = args.section;
