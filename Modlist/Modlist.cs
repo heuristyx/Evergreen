@@ -9,8 +9,7 @@ using UnityEngine.UI;
 namespace Evergreen;
 
 public static class Modlist {
-  private static GameObject ModlistButtonGO;
-  private static Button ModlistButton;
+  private static GameObject ModlistButton;
   private static ModlistUI UI = new ModlistUI();
   private static GameObject ModlistPanel;
   private static Button BackToMenuButton;
@@ -24,100 +23,113 @@ public static class Modlist {
 
   internal static void Init() {
     On.HomeUI.Awake += InitModlistUI;
-    On.HomeUI.SetButtonsListeners += AddModlistButtonListener;
   }
 
   private static void InitModlistUI(On.HomeUI.orig_Awake orig, HomeUI self) {
-    Evergreen.Log.LogInfo("Initializing home UI");
+    orig(self);
 
+    CapturePixelFontAsset(self);
     MakeModPanel(self);
+    InsertModButtonIntoMenu(self);
 
-    var quitButton = self.transform.Find("Panel").Find("Quit");
+    TextDrawing.Init(); // Bad place to init this?
+  }
 
-    Navigation newQuitNav = new Navigation();
-    newQuitNav.mode = Navigation.Mode.Explicit;
-
-    Navigation newModlistNav = new Navigation();
-    newModlistNav.mode = Navigation.Mode.Explicit;
-
-    Navigation newTwitterNav = new Navigation();
-    newTwitterNav.mode = Navigation.Mode.Explicit;
-
-    ModlistButtonGO = GameObject.Instantiate(quitButton.gameObject);
-    ModlistButtonGO.name = "Modlist";
-    ModlistButtonGO.transform.SetParent(quitButton.parent);
-    ModlistButtonGO.transform.localPosition = quitButton.localPosition;
-    ModlistButtonGO.transform.localScale = quitButton.localScale;
-    ModlistButtonGO.GetComponent<TextMeshProUGUI>().text = "Mods";
-    ModlistButton = ModlistButtonGO.GetComponent<Button>();
-
-    newQuitNav.selectOnUp = self.transform.Find("Panel").Find("Settings").GetComponent<Button>();
-    newQuitNav.selectOnDown = ModlistButton;
-
-    newModlistNav.selectOnUp = quitButton.GetComponent<Button>();
-    newModlistNav.selectOnDown = self.transform.Find("Panel").Find("Twitter").GetComponent<Button>();
-
-    newTwitterNav.selectOnUp = ModlistButton;
-    newTwitterNav.selectOnDown = self.transform.Find("Panel").Find("Discord").GetComponent<Button>();
-
-    quitButton.GetComponent<Button>().navigation = newQuitNav;
-    ModlistButton.navigation = newModlistNav;
-    self.transform.Find("Panel").Find("Twitter").GetComponent<Button>().navigation = newTwitterNav;
+  private static void CapturePixelFontAsset(HomeUI homeUI) {
+    CommonResources.pixelFont = homeUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>().font;
   }
 
   private static void MakeModPanel(HomeUI homeUI) {
-    ModlistPanel = new GameObject("Modlist Panel");
+    // Modlist panel container
+    ModlistPanel = new GameObject("Modlist Panel", typeof(ModlistUI));
     ModlistPanel.transform.SetParent(homeUI.transform.parent);
-    var mlui = ModlistPanel.AddComponent<ModlistUI>();
     ModlistPanel.gameObject.SetActive(false);
-    ModlistPanel.AddComponent<ModlistUI>();
-    var img = ModlistPanel.AddComponent<Image>();
-    img.sprite = homeUI.GetComponent<Image>().sprite;
-    img.type = Image.Type.Sliced;
-    img.color = Color.black;
-    var mlrt = ModlistPanel.GetComponent<RectTransform>();
-    mlrt.FullScreen(true);
 
+    var mlimg = ModlistPanel.AddComponent<Image>();
+    mlimg.sprite = homeUI.GetComponent<Image>().sprite;
+    mlimg.type = Image.Type.Sliced;
+    mlimg.color = Color.black;
+
+    ModlistPanel.GetComponent<RectTransform>().FullScreen(true);
+
+    // Mod list text object
     GameObject ModlistText = new GameObject("Text");
     ModlistText.transform.SetParent(ModlistPanel.transform);
-    var mltrt = ModlistText.AddComponent<RectTransform>();
-    mltrt.FullScreen(true);
-    var title = ModlistText.AddComponent<TextMeshProUGUI>();
-    title.alignment = TextAlignmentOptions.Center;
-    title.fontSize = 24;
-    title.text = "===== Enabled mods =====\n" + string.Join("\n", GenerateModList());
+    ModlistText.AddComponent<RectTransform>().FullScreen(true);
+    var mlt = ModlistText.AddComponent<TextMeshProUGUI>();
+    mlt.alignment = TextAlignmentOptions.Center;
+    mlt.fontSize = 24;
+    mlt.font = CommonResources.pixelFont;
+    mlt.text = "===== Enabled mods =====\n" + string.Join("\n", GenerateModList());
 
-    GameObject BackToMenuGO = GameObject.Instantiate(homeUI.transform.Find("Panel").Find("Quit").gameObject);
-    BackToMenuGO.transform.SetParent(ModlistPanel.transform);
-    var btmrt = BackToMenuGO.GetComponent<RectTransform>();
+    // Return to menu button
+    GameObject BackToMenu = GameObject.Instantiate(homeUI.transform.Find("Panel").Find("Quit").gameObject);
+    BackToMenu.transform.SetParent(ModlistPanel.transform);
+    var btmrt = BackToMenu.GetComponent<RectTransform>();
     btmrt.FullScreen(true);
     btmrt.anchorMax = new Vector2(1f, 0.1f);
-    BackToMenuButton = BackToMenuGO.GetComponent<Button>();
-    var btmNav = new Navigation();
-    btmNav.mode = Navigation.Mode.None;
-    BackToMenuButton.navigation = btmNav;
-    var btmText = BackToMenuGO.GetComponent<TextMeshProUGUI>();
-    btmText.text = "Back to menu";
+    BackToMenuButton = BackToMenu.GetComponent<Button>();
+    BackToMenuButton.navigation = new Navigation() { mode = Navigation.Mode.None };
+    var btmText = BackToMenu.GetComponent<TextMeshProUGUI>();
     btmText.alignment = TextAlignmentOptions.Center;
+    btmText.text = "Back to menu";
     BackToMenuButton.onClick.AddListener(delegate() {
       homeUI.OpenHomeUI();
     });
-    var cursor = BackToMenuGO.transform.GetChild(0).gameObject;
-    cursor.transform.localPosition = new Vector3(-160f, 0f, 0f);
+    var cursor = BackToMenu.transform.GetChild(0).gameObject;
+    cursor.transform.localPosition = new Vector3(-155f, -4f, 0f);
     cursor.SetActive(true);
+  }
+
+  private static void InsertModButtonIntoMenu(HomeUI homeUI) {
+    var panel = homeUI.transform.Find("Panel");
+    var quitButton = panel.Find("Quit");
+    int i = quitButton.GetSiblingIndex() - 1;
+
+    // Mod list button object
+    ModlistButton = GameObject.Instantiate(quitButton.gameObject);
+    ModlistButton.name = "Modlist";
+    ModlistButton.transform.SetParent(panel);
+    ModlistButton.transform.SetSiblingIndex(i);
+    ModlistButton.transform.localPosition = quitButton.localPosition;
+    ModlistButton.transform.localScale = quitButton.localScale;
+    ModlistButton.GetComponent<TextMeshProUGUI>().text = "Mods";
+    ModlistButton.GetComponent<Button>().onClick.AddListener(delegate() {
+      UI.OpenModlistPanel();
+      BackToMenuButton.Select();
+    });
+
+    // New menu navigation directions
+    Navigation newAboveNav, newModlistNav, newBelowNav;
+    newAboveNav = newModlistNav = newBelowNav = new Navigation() { mode = Navigation.Mode.Explicit };
+
+    var buttons = GetButtons(panel.gameObject);
+
+    newAboveNav.selectOnUp = buttons[i-2];
+    newAboveNav.selectOnDown = buttons[i];
+
+    newModlistNav.selectOnUp = buttons[i-1];
+    newModlistNav.selectOnDown = buttons[i+1];
+
+    newBelowNav.selectOnUp = buttons[i];
+    newBelowNav.selectOnDown = buttons[i+2];
+
+    buttons[i-1].navigation = newAboveNav;
+    buttons[i].navigation = newModlistNav;
+    buttons[i+1].navigation = newBelowNav;
+  }
+
+  private static List<Button> GetButtons(GameObject parent) {
+    var l = new List<Button>();
+    for (int i = 0; i < parent.transform.childCount; i++) {
+      var btn = parent.transform.GetChild(i).GetComponent<Button>();
+      if (btn != null) l.Add(btn);
+    }
+    return l;
   }
 
   private static List<string> GenerateModList() {
     var infos = Chainloader.PluginInfos;
-    return infos.Select(i => i.Value.Metadata.Name).ToList();
-  }
-
-  private static void AddModlistButtonListener(On.HomeUI.orig_SetButtonsListeners orig, HomeUI self) {
-    orig(self);
-
-    ModlistButton.onClick.AddListener(delegate() {
-      UI.OpenModlistPanel();
-      BackToMenuButton.Select();
-    });
+    return infos.Select(i => $"{i.Value.Metadata.Name} ({i.Value.Metadata.Version})").ToList();
   }
 }

@@ -15,7 +15,6 @@ public class Evergreen : BaseUnityPlugin {
   private void Awake() {
     Log = BepInEx.Logging.Logger.CreateLogSource("Evergreen");
 
-    Text.Init();
     Modlist.Init();
 
     BattleAPI.Init();

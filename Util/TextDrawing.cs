@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 namespace Evergreen;
 
-public static class Text {
+public static class TextDrawing {
   private static GameObject ConsoleCanvas;
   private static GameObject Console;
   private static GameObject VersionObj;
@@ -21,7 +21,7 @@ public static class Text {
     GameObject.DontDestroyOnLoad(ConsoleCanvas);
 
     Console = DrawText("Evergreen console initialized", TextAlignmentOptions.TopRight);
-    VersionObj = DrawText($"{Evergreen.Name} ver. {Evergreen.Version}", TextAlignmentOptions.BottomRight);
+    VersionObj = DrawText($"{Evergreen.Name} ver. {Evergreen.Version}", TextAlignmentOptions.TopLeft);
     VersionObj.SetActive(false);
     SceneManager.activeSceneChanged += ShowEvergreenVer;
   }
@@ -61,6 +61,7 @@ public static class Text {
   private static GameObject CreateTextObject() {
     var to = new GameObject("Custom Textbox");
     var tm = to.AddComponent<TextMeshProUGUI>();
+    tm.font = CommonResources.pixelFont;
     to.transform.SetParent(ConsoleCanvas.transform);
     var rt = to.GetComponent<RectTransform>();
     rt.anchorMin = new Vector2(0, 0);
