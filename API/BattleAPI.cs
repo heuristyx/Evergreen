@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.EventSystems;
 using Everhood.Chart;
+using Sirenix.Serialization;
 
 namespace Evergreen;
 
@@ -19,6 +20,7 @@ public static class BattleAPI {
   public static event EventHandler<DamageEventArgs> OnDealDamage;
   public static event EventHandler OnBattleUpdate;
   public static event EventHandler OnBattleStart;
+  public static event EventHandler OnBattleRetry;
   public static event EventHandler OnKill;  
   public static event EventHandler OnLose;
   public static event EventHandler OnJump;
@@ -28,10 +30,11 @@ public static class BattleAPI {
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
+    On.Everhood.BattlePauseController.Awake += HookOnBattleLoad;
+    On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;
+    On.Everhood.Battle.GameOverController.Retry += HookOnBattleRetryGOC;
     On.Everhood.Battle.BattlePlayer.Damage += HookOnTakeDamage;
     On.Everhood.Battle.BattleEnemy.Damage += HookOnDealDamage;
-    On.Everhood.Battle.BattlePlayer.Update += HookOnBattleUpdate;
-    On.Everhood.Battle.BattlePlayer.Awake += HookOnBattleStart;
     On.Everhood.Battle.BattleGameOverController.GameOver += HookOnLose;
     On.Everhood.KillModeEvents.NpcKilled += HookOnKill;
     On.Everhood.Battle.PlayerVerticalMovement.Jump += HookOnJump;
@@ -40,7 +43,34 @@ public static class BattleAPI {
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
   }
 
+  // Event raisers
+  internal static void RaiseBattleStart(object sender) {
+    OnBattleStart?.Invoke(sender, EventArgs.Empty);
+  }
+
+  internal static void RaiseBattleUpdate(object sender) {
+    OnBattleUpdate?.Invoke(sender, EventArgs.Empty);
+  }
+
   // Hooks
+  private static void HookOnBattleLoad(On.Everhood.BattlePauseController.orig_Awake orig, BattlePauseController self) {
+    self.gameObject.AddComponent<BattleManager>();
+
+    orig(self);
+  }
+
+  private static void HookOnBattleRetryBPC(On.Everhood.BattlePauseController.orig_Retry orig, BattlePauseController self) {
+    OnBattleRetry?.Invoke(self, EventArgs.Empty);
+    
+    orig(self);
+  }
+
+  private static void HookOnBattleRetryGOC(On.Everhood.Battle.GameOverController.orig_Retry orig, Everhood.Battle.GameOverController self) {
+    OnBattleRetry?.Invoke(self, EventArgs.Empty);
+    
+    orig(self);
+  }
+
   private static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage) {
     var args = new DamageEventArgs { damage = damage };
     OnTakeDamage?.Invoke(self, args);
@@ -55,18 +85,6 @@ public static class BattleAPI {
     damage = args.damage;
 
     orig(self, damage);
-  }
-
-  private static void HookOnBattleUpdate(On.Everhood.Battle.BattlePlayer.orig_Update orig, BattlePlayer self) {
-    OnBattleUpdate?.Invoke(self, EventArgs.Empty);
-
-    orig(self);
-  }
-
-  private static void HookOnBattleStart(On.Everhood.Battle.BattlePlayer.orig_Awake orig, BattlePlayer self) {
-    orig(self);
-
-    OnBattleStart?.Invoke(self, EventArgs.Empty);
   }
 
   private static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self) {

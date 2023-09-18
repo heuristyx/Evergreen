@@ -8,11 +8,25 @@ using UnityEngine.SceneManagement;
 namespace Evergreen;
 
 public static class TextDrawing {
-  private static GameObject ConsoleCanvas;
+  internal static GameObject ConsoleCanvas;
   private static GameObject Console;
   private static GameObject VersionObj;
   private static List<string> ConsoleHistory = new List<string>();
   private static int MaxHistoryCount = 5;
+
+  public static event EventHandler OnConsoleReady;
+
+  public enum TextAlignmentOptions {
+    TopLeft = TMPro.TextAlignmentOptions.TopLeft,
+    Top = TMPro.TextAlignmentOptions.Top,
+    TopRight = TMPro.TextAlignmentOptions.TopRight,
+    Left = TMPro.TextAlignmentOptions.Left,
+    Center = TMPro.TextAlignmentOptions.Center,
+    Right = TMPro.TextAlignmentOptions.Right,
+    BottomLeft = TMPro.TextAlignmentOptions.BottomLeft,
+    Bottom = TMPro.TextAlignmentOptions.Bottom,
+    BottomRight = TMPro.TextAlignmentOptions.BottomRight,
+  }
 
   internal static void Init() {
     ConsoleCanvas = new GameObject("EvergreenConsole");
@@ -20,10 +34,12 @@ public static class TextDrawing {
     canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     GameObject.DontDestroyOnLoad(ConsoleCanvas);
 
-    Console = DrawText("Evergreen console initialized", TextAlignmentOptions.TopRight);
+    Console = DrawText("", TextAlignmentOptions.TopRight);
     VersionObj = DrawText($"{Evergreen.Name} ver. {Evergreen.Version}", TextAlignmentOptions.TopLeft);
     VersionObj.SetActive(false);
     SceneManager.activeSceneChanged += ShowEvergreenVer;
+
+    OnConsoleReady?.Invoke(ConsoleCanvas, EventArgs.Empty);
   }
 
   private static void ShowEvergreenVer(Scene current, Scene next) {
@@ -32,28 +48,30 @@ public static class TextDrawing {
   }
 
   public static void DrawToConsole(string text) {
-    if (ConsoleHistory.Count > MaxHistoryCount) ConsoleHistory.RemoveAt(ConsoleHistory.Count - 1);
-    ConsoleHistory.Insert(0, text);
+    if (ConsoleHistory.Count >= MaxHistoryCount) ConsoleHistory.RemoveAt(0);
+    ConsoleHistory.Add(text);
 
     Console.GetComponent<TextMeshProUGUI>().text = string.Join("\n", ConsoleHistory.ToArray());
   }
 
-  public static GameObject DrawText(string text, float x, float y) {
+  public static GameObject DrawText(string text, float x, float y, float fontSize = 36) { // screen is ~2000 units wide and ~1400 units tall
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
-    tm.alignment = TextAlignmentOptions.Center;
+    tm.alignment = TMPro.TextAlignmentOptions.Center;
     tm.text = text;
+    tm.fontSize = fontSize;
 
     to.transform.localPosition = new Vector3(x, y, 0);
 
     return to;
   }
 
-  public static GameObject DrawText(string text, TextAlignmentOptions alignment) {
+  public static GameObject DrawText(string text, TextAlignmentOptions alignment, float fontSize = 36) {
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
-    tm.alignment = alignment;
+    tm.alignment = (TMPro.TextAlignmentOptions)alignment;
     tm.text = text;
+    tm.fontSize = fontSize;
 
     return to;
   }

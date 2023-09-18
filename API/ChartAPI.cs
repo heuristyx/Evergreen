@@ -14,15 +14,23 @@ public static class ChartAPI {
   }
 
   // Event handlers
+  public static event EventHandler OnChartStart;
   public static event EventHandler<NoteEventArgs> OnNoteSpawn;
   public static event EventHandler<SectionEventArgs> OnSectionStart;
 
   internal static void Init() {
+    On.Everhood.Chart.ChartReader.StartChartReader += HookOnChartStart;
     On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
     On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
   }
 
   // Hooks
+  private static void HookOnChartStart(On.Everhood.Chart.ChartReader.orig_StartChartReader orig, Everhood.Chart.ChartReader self) {
+    orig(self);
+
+    OnChartStart?.Invoke(self, EventArgs.Empty);
+  }
+
   private static void HookOnNoteSpawn(On.Everhood.Chart.NoteEventHandler.orig_OnNote orig, NoteEventHandler self, Everhood.Chart.Note note) {
     var args = new NoteEventArgs { note = note };
     OnNoteSpawn?.Invoke(self, args);

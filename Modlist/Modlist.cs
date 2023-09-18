@@ -9,7 +9,6 @@ using UnityEngine.UI;
 namespace Evergreen;
 
 public static class Modlist {
-  private static GameObject ModlistButton;
   private static ModlistUI UI = new ModlistUI();
   private static GameObject ModlistPanel;
   private static Button BackToMenuButton;
@@ -32,7 +31,7 @@ public static class Modlist {
     MakeModPanel(self);
     InsertModButtonIntoMenu(self);
 
-    TextDrawing.Init(); // Bad place to init this?
+    if (TextDrawing.ConsoleCanvas == null) TextDrawing.Init(); // Bad place to init this?
   }
 
   private static void CapturePixelFontAsset(HomeUI homeUI) {
@@ -87,7 +86,7 @@ public static class Modlist {
     int i = quitButton.GetSiblingIndex() - 1;
 
     // Mod list button object
-    ModlistButton = GameObject.Instantiate(quitButton.gameObject);
+    var ModlistButton = GameObject.Instantiate(quitButton.gameObject);
     ModlistButton.name = "Modlist";
     ModlistButton.transform.SetParent(panel);
     ModlistButton.transform.SetSiblingIndex(i);
