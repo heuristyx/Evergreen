@@ -27,15 +27,8 @@ public static class Modlist {
   private static void InitModlistUI(On.HomeUI.orig_Awake orig, HomeUI self) {
     orig(self);
 
-    CapturePixelFontAsset(self);
     MakeModPanel(self);
     InsertModButtonIntoMenu(self);
-
-    if (TextDrawing.ConsoleCanvas == null) TextDrawing.Init(); // Bad place to init this?
-  }
-
-  private static void CapturePixelFontAsset(HomeUI homeUI) {
-    CommonResources.pixelFont = homeUI.transform.GetChild(0).GetComponent<TextMeshProUGUI>().font;
   }
 
   private static void MakeModPanel(HomeUI homeUI) {
@@ -58,7 +51,7 @@ public static class Modlist {
     var mlt = ModlistText.AddComponent<TextMeshProUGUI>();
     mlt.alignment = TextAlignmentOptions.Center;
     mlt.fontSize = 24;
-    mlt.font = CommonResources.pixelFont;
+    mlt.font = Assets.pixelFont;
     mlt.text = "===== Enabled mods =====\n" + string.Join("\n", GenerateModList());
 
     // Return to menu button

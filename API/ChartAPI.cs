@@ -3,8 +3,10 @@ using Everhood.Chart;
 
 namespace Evergreen;
 
+/// <summary>
+/// The Evergreen API for chart-related events.
+/// </summary>
 public static class ChartAPI {
-  // Event args
   public class NoteEventArgs : EventArgs {
     public Everhood.Chart.Note note { get; set; }
   }
@@ -13,22 +15,39 @@ public static class ChartAPI {
     public Everhood.Chart.Section section { get; set; }
   }
 
-  // Event handlers
+  private static bool audioClipLoaded = false;
+
+  /// <summary>
+  /// Invoked when a chart starts (i.e. when music starts playing).
+  /// </summary>
   public static event EventHandler OnChartStart;
+
+  /// <summary>
+  /// Invoked on the tick a note spawns.
+  /// </summary>
   public static event EventHandler<NoteEventArgs> OnNoteSpawn;
+
+  /// <summary>
+  /// Invoked on the tick a section starts.
+  /// </summary>
   public static event EventHandler<SectionEventArgs> OnSectionStart;
 
   internal static void Init() {
-    On.Everhood.Chart.ChartReader.StartChartReader += HookOnChartStart;
+    Evergreen.Log.LogInfo($"Loading Evergreen {nameof(ChartAPI)}");
+
+    On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
+    On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
     On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
     On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
   }
 
-  // Hooks
-  private static void HookOnChartStart(On.Everhood.Chart.ChartReader.orig_StartChartReader orig, Everhood.Chart.ChartReader self) {
-    orig(self);
+  private static void HookOnChartUpdate(On.Everhood.Chart.ChartReader.orig_ChartReaderBehaviour orig, Everhood.Chart.ChartReader self) {
+    if (self._started && !audioClipLoaded) {
+      audioClipLoaded = true;
+      OnChartStart?.Invoke(self, EventArgs.Empty);
+    }
 
-    OnChartStart?.Invoke(self, EventArgs.Empty);
+    orig(self);
   }
 
   private static void HookOnNoteSpawn(On.Everhood.Chart.NoteEventHandler.orig_OnNote orig, NoteEventHandler self, Everhood.Chart.Note note) {

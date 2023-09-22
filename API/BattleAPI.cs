@@ -1,30 +1,65 @@
 using System;
 using Everhood;
 using Everhood.Battle;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.EventSystems;
-using Everhood.Chart;
-using Sirenix.Serialization;
 
 namespace Evergreen;
 
+/// <summary>
+/// The Evergreen API for battle-related events.
+/// </summary>
 public static class BattleAPI {
-  // Event args
   public class DamageEventArgs : EventArgs {
     public int damage { get; set; }
   }
 
-  // Event handlers
+  /// <summary>
+  /// Invoked when the player takes damage.
+  /// </summary>
   public static event EventHandler<DamageEventArgs> OnTakeDamage;
+
+  /// <summary>
+  /// Invoked when the enemy takes damage.
+  /// </summary>
   public static event EventHandler<DamageEventArgs> OnDealDamage;
+
+  /// <summary>
+  /// Invoked every frame during battle.
+  /// </summary>
   public static event EventHandler OnBattleUpdate;
+
+  /// <summary>
+  /// Invoked when a battle is loaded. (For when the music starts, try <c>ChartAPI.OnChartStart</c>.)
+  /// </summary>
   public static event EventHandler OnBattleStart;
+
+  /// <summary>
+  /// Invoked when the battle is restarted, through the pause or game over menu.
+  /// </summary>
   public static event EventHandler OnBattleRetry;
-  public static event EventHandler OnKill;  
+
+  /// <summary>
+  /// Invoked when the enemy is killed.
+  /// </summary>
+  public static event EventHandler OnKill;
+
+  /// <summary>
+  /// Invoked when the player is defeated.
+  /// </summary>
   public static event EventHandler OnLose;
+
+  /// <summary>
+  /// Invoked when the player jumps.
+  /// </summary>
   public static event EventHandler OnJump;
+
+  /// <summary>
+  /// Invoked when the player successfully absorbs a note.
+  /// </summary>
   public static event EventHandler OnAbsorbNote;
+
+  /// <summary>
+  /// Invoked when the player shoots absorbed notes back.
+  /// </summary>
   public static event EventHandler OnShootDeflect;
 
   internal static void Init() {
@@ -43,7 +78,6 @@ public static class BattleAPI {
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
   }
 
-  // Event raisers
   internal static void RaiseBattleStart(object sender) {
     OnBattleStart?.Invoke(sender, EventArgs.Empty);
   }
@@ -52,7 +86,6 @@ public static class BattleAPI {
     OnBattleUpdate?.Invoke(sender, EventArgs.Empty);
   }
 
-  // Hooks
   private static void HookOnBattleLoad(On.Everhood.BattlePauseController.orig_Awake orig, BattlePauseController self) {
     self.gameObject.AddComponent<BattleManager>();
 

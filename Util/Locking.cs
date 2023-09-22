@@ -6,6 +6,15 @@ namespace Evergreen;
 public static class Locking {
   private readonly static List<Lock> locks = new List<Lock>();
 
+  /// <summary>
+  /// The type of events to lock.
+  /// <list type="bullet">
+  ///   <item>Score: prevents submission of replay battle scores to leaderboards.</item>
+  ///   <item>BattleStars: prevents unlocking replay battle stars.</item>
+  ///   <item>Achievements: prevents unlocking Steam achievements.</item>
+  ///   <item>All: prevents all of the above.</item>
+  /// </list>
+  /// </summary>
   public enum LockType {
     Score,
     BattleStars,
@@ -13,6 +22,9 @@ public static class Locking {
     All
   }
 
+  /// <summary>
+  /// A lock belonging to a particular mod. Locks prevent certain ingame events from triggering, such as highscore submission to prevent cheating.
+  /// </summary>
   public class Lock {
     public string PluginGUID;
     public string LockID;
@@ -25,23 +37,34 @@ public static class Locking {
     }
   }
 
+  /// <summary>
+  /// Add a lock.
+  /// </summary>
   public static void AddLock(Lock _lock) {
     locks.Add(_lock);
   }
 
+  /// <summary>
+  /// Remove a lock.
+  /// </summary>
   public static void RemoveLock(Lock _lock) {
     locks.Remove(_lock);
   }
 
+  /// <summary>
+  /// Get all currently registered locks.
+  /// </summary>
   public static List<Lock> GetLocks() {
     return locks;
   }
 
+  /// <summary>
+  /// Get all currently registered locks of the given <c>LockType</c>
+  /// </summary>
   public static List<Lock> GetLocks(LockType lockType) {
     return locks.FindAll(l => l.LockType == lockType || l.LockType == LockType.All);
   }
 
-  // Locking
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(Locking)}");
 
