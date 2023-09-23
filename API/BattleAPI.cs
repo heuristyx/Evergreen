@@ -1,6 +1,8 @@
 using System;
 using Everhood;
 using Everhood.Battle;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Evergreen;
 
@@ -11,6 +13,8 @@ public static class BattleAPI {
   public class DamageEventArgs : EventArgs {
     public int damage { get; set; }
   }
+
+  private static int lastBattleID = 0;
 
   /// <summary>
   /// Invoked when the player takes damage.
@@ -36,6 +40,11 @@ public static class BattleAPI {
   /// Invoked when the battle is restarted, through the pause or game over menu.
   /// </summary>
   public static event EventHandler OnBattleRetry;
+
+  /// <summary>
+  /// Invoked when the battle is left, by returning to main menu or finishing the battle.
+  /// </summary>
+  public static event EventHandler OnBattleLeave;
 
   /// <summary>
   /// Invoked when the enemy is killed.
@@ -65,7 +74,7 @@ public static class BattleAPI {
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
-    On.Everhood.BattlePauseController.Awake += HookOnBattleLoad;
+    On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoad;
     On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;
     On.Everhood.Battle.GameOverController.Retry += HookOnBattleRetryGOC;
     On.Everhood.Battle.BattlePlayer.Damage += HookOnTakeDamage;
@@ -76,6 +85,7 @@ public static class BattleAPI {
     On.AbsorbBehaviour.NotifyOnAbsorbSuccess += HookOnAbsorbNote;
     On.AbsorbBehaviour.NotifyOnAbsorbTallSuccess += HookOnAbsorbTallNote;
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
+    SceneManager.activeSceneChanged += HookOnSceneChange;
   }
 
   internal static void RaiseBattleStart(object sender) {
@@ -86,8 +96,20 @@ public static class BattleAPI {
     OnBattleUpdate?.Invoke(sender, EventArgs.Empty);
   }
 
-  private static void HookOnBattleLoad(On.Everhood.BattlePauseController.orig_Awake orig, BattlePauseController self) {
+  private static void HookOnSceneChange(Scene from, Scene to) {
+    if (EverhoodGameData.battleID == 0 && lastBattleID > 0) {
+      lastBattleID = 0;
+      OnBattleLeave?.Invoke(null, EventArgs.Empty); 
+    }
+
+    if (lastBattleID < 0) lastBattleID = 999; // Frog special case
+  }
+
+  private static void HookOnBattleLoad(On.Everhood.Battle.GameOverController.orig_Awake orig, Everhood.Battle.GameOverController self) {
     self.gameObject.AddComponent<BattleManager>();
+
+    lastBattleID = EverhoodGameData.battleID;
+    if (lastBattleID == 0) lastBattleID = -1; // Frog fight has default ID 0, treat as special case
 
     orig(self);
   }
