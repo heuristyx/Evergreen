@@ -1,4 +1,5 @@
 using System;
+using CBCompat;
 using Everhood;
 using Everhood.Battle;
 using UnityEngine;
@@ -76,8 +77,12 @@ public static class BattleAPI {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
     if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame) {
+      Evergreen.Log.LogInfo("Initializing base game Battle Hooks");
       On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoadBase;
       SceneManager.activeSceneChanged += HookOnBattleLeaveBase;
+    } else {
+      Evergreen.Log.LogInfo("Initializing CB Battle Hooks");
+      CompatMethods.InitBattleHooks();
     }
 
     On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;

@@ -1,5 +1,8 @@
 using System;
+using CBCompat;
 using Everhood.Chart;
+using IL.MoonSharp.VsCodeDebugger.SDK;
+using Sirenix.Serialization;
 
 namespace Evergreen;
 
@@ -11,11 +14,19 @@ public static class ChartAPI {
     public Everhood.Chart.Note note { get; set; }
   }
 
+  public class NoteEventArgsCB : EventArgs {
+    public ChartNoteSectionData.Data.Note note { get; set; }
+  }
+
   public class SectionEventArgs : EventArgs {
     public Everhood.Chart.Section section { get; set; }
   }
 
-  private static bool audioClipLoaded = false;
+  public class SectionEventArgsCB : EventArgs {
+    public ChartNoteSectionData.Data.Section section { get; set; }
+  }
+
+  public static bool audioClipLoaded = false;
 
   /// <summary>
   /// Invoked when a chart starts (i.e. when music starts playing).
@@ -25,20 +36,38 @@ public static class ChartAPI {
   /// <summary>
   /// Invoked on the tick a note spawns.
   /// </summary>
-  public static event EventHandler<NoteEventArgs> OnNoteSpawn;
+  public static event EventHandler OnNoteSpawn;
 
   /// <summary>
   /// Invoked on the tick a section starts.
   /// </summary>
-  public static event EventHandler<SectionEventArgs> OnSectionStart;
+  public static event EventHandler OnSectionStart;
 
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(ChartAPI)}");
 
-    On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
-    On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
-    On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
-    On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
+    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame) {
+      Evergreen.Log.LogInfo("Initializing base game Chart Hooks");
+      On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
+      On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
+      On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
+      On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
+    } else {
+      Evergreen.Log.LogInfo("Initializing CB Chart Hooks");
+      CompatMethods.InitChartHooks();
+    }
+  }
+
+  public static void RaiseChartStartEvent(object self, EventArgs args) {
+    OnChartStart?.Invoke(self, args);
+  }
+
+  public static void RaiseNoteSpawnEvent(object self, NoteEventArgsCB args) {
+    OnNoteSpawn?.Invoke(self, args);
+  }
+
+  public static void RaiseSectionStartEvent(object self, SectionEventArgsCB args) {
+    OnSectionStart?.Invoke(self, args);
   }
 
   private static void HookOnChartUpdate(On.Everhood.Chart.ChartReader.orig_ChartReaderBehaviour orig, Everhood.Chart.ChartReader self) {
