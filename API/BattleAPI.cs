@@ -2,6 +2,7 @@ using System;
 using Everhood;
 using Everhood.Battle;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 
 namespace Evergreen;
@@ -74,7 +75,11 @@ public static class BattleAPI {
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
-    On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoad;
+    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame) {
+      On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoadBase;
+      SceneManager.activeSceneChanged += HookOnBattleLeaveBase;
+    }
+
     On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;
     On.Everhood.Battle.GameOverController.Retry += HookOnBattleRetryGOC;
     On.Everhood.Battle.BattlePlayer.Damage += HookOnTakeDamage;
@@ -85,7 +90,6 @@ public static class BattleAPI {
     On.AbsorbBehaviour.NotifyOnAbsorbSuccess += HookOnAbsorbNote;
     On.AbsorbBehaviour.NotifyOnAbsorbTallSuccess += HookOnAbsorbTallNote;
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
-    SceneManager.activeSceneChanged += HookOnSceneChange;
   }
 
   internal static void RaiseBattleStart(object sender) {
@@ -96,7 +100,7 @@ public static class BattleAPI {
     OnBattleUpdate?.Invoke(sender, EventArgs.Empty);
   }
 
-  private static void HookOnSceneChange(Scene from, Scene to) {
+  private static void HookOnBattleLeaveBase(Scene from, Scene to) {
     if (EverhoodGameData.battleID == 0 && lastBattleID > 0) {
       lastBattleID = 0;
       OnBattleLeave?.Invoke(null, EventArgs.Empty); 
@@ -105,7 +109,7 @@ public static class BattleAPI {
     if (lastBattleID < 0) lastBattleID = 999; // Frog special case
   }
 
-  private static void HookOnBattleLoad(On.Everhood.Battle.GameOverController.orig_Awake orig, Everhood.Battle.GameOverController self) {
+  private static void HookOnBattleLoadBase(On.Everhood.Battle.GameOverController.orig_Awake orig, Everhood.Battle.GameOverController self) {
     self.gameObject.AddComponent<BattleManager>();
 
     lastBattleID = EverhoodGameData.battleID;

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Doozy.Engine.Extensions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,10 +31,11 @@ public static class TextDrawing {
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(TextDrawing)}");
 
-    EvergreenCanvas = new GameObject("EvergreenConsole");
+    EvergreenCanvas = new GameObject("EvergreenCanvas");
     var canvas = EvergreenCanvas.AddComponent<Canvas>();
     canvas.renderMode = RenderMode.ScreenSpaceOverlay;
     GameObject.DontDestroyOnLoad(EvergreenCanvas);
+    EvergreenCanvas.GetComponent<RectTransform>().FullScreen(true);
 
     Console = DrawText("", TextAlignmentOptions.TopRight);
     Console.SetActive(false);

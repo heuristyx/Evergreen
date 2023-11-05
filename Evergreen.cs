@@ -1,5 +1,7 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using BepInEx.Logging;
+using UnityEngine.Experimental.PlayerLoop;
 
 namespace Evergreen;
 
@@ -9,6 +11,13 @@ public class Evergreen : BaseUnityPlugin {
   public const string Name = "Evergreen";
   public const string Version = "0.1.0";
 
+  public enum Executable {
+    BaseGame,
+    CustomBattles
+  };
+
+  public static Executable CurrentExecutable;
+
   public static PluginInfo PluginInfo { get; private set; }
 
   internal static ManualLogSource Log;
@@ -17,6 +26,8 @@ public class Evergreen : BaseUnityPlugin {
     Log = BepInEx.Logging.Logger.CreateLogSource("Evergreen");
 
     PluginInfo = Info;
+
+    Init();
 
     Assets.Init();
 
@@ -28,5 +39,11 @@ public class Evergreen : BaseUnityPlugin {
     Locking.Init();
 
     Log.LogInfo("Evergreen loaded.");
+  }
+
+  private void Init() {
+    // Check if EverhoodModding namespace exists
+    if (Type.GetType("EverhoodModding.BattleInitializer") != null) CurrentExecutable = Executable.CustomBattles;
+    else CurrentExecutable = Executable.BaseGame;
   }
 }

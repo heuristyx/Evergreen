@@ -59,7 +59,7 @@ public static class Locking {
   }
 
   /// <summary>
-  /// Get all currently registered locks of the given <c>LockType</c>
+  /// Get all currently registered locks of the given <c>LockType</c>.
   /// </summary>
   public static List<Lock> GetLocks(LockType lockType) {
     return locks.FindAll(l => l.LockType == lockType || l.LockType == LockType.All);
@@ -67,6 +67,10 @@ public static class Locking {
 
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(Locking)}");
+    if (Evergreen.CurrentExecutable == Evergreen.Executable.CustomBattles) {
+      Evergreen.Log.LogWarning($"Skipping Evergreen {nameof(Locking)}: current executable is the Custom Battle launcher.");
+      return;
+    }
 
     On.SG.Leaderboard.Leaderboard.SaveScore += HookLockSaveScore;
     On.SteamAchievement.UnlockAchievement += HookLockAchievements;
