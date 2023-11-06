@@ -38,8 +38,6 @@ public static class ChartAPI
       callback(self, args);
       note = args.note;
 
-      UnityEngine.Debug.Log("Note spawned");
-
       orig(self, note);
     };
   }
@@ -55,8 +53,6 @@ public static class ChartAPI
       var args = new SectionEventArgsCB { section = section };
       callback(self, args);
       section = args.section;
-
-      UnityEngine.Debug.Log("Section started");
 
       orig(self, section);
     };
