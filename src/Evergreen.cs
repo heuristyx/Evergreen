@@ -9,7 +9,7 @@ public class Evergreen : BaseUnityPlugin
 {
   public const string Guid = "com.heuristyx.plugins.evergreen";
   public const string Name = "Evergreen";
-  public const string Version = "0.1.0";
+  public const string Version = "1.0.0";
 
   public enum Executable
   {
