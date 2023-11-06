@@ -1,8 +1,5 @@
 using System;
-using CBCompat;
 using Everhood.Chart;
-using IL.MoonSharp.VsCodeDebugger.SDK;
-using Sirenix.Serialization;
 
 namespace Evergreen;
 
@@ -14,16 +11,8 @@ public static class ChartAPI {
     public Everhood.Chart.Note note { get; set; }
   }
 
-  public class NoteEventArgsCB : EventArgs {
-    public ChartNoteSectionData.Data.Note note { get; set; }
-  }
-
   public class SectionEventArgs : EventArgs {
     public Everhood.Chart.Section section { get; set; }
-  }
-
-  public class SectionEventArgsCB : EventArgs {
-    public ChartNoteSectionData.Data.Section section { get; set; }
   }
 
   public static bool audioClipLoaded = false;
@@ -47,14 +36,14 @@ public static class ChartAPI {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(ChartAPI)}");
 
     if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame) {
-      Evergreen.Log.LogInfo("Initializing base game Chart Hooks");
       On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
       On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
       On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
       On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
     } else {
-      Evergreen.Log.LogInfo("Initializing CB Chart Hooks");
-      CompatMethods.InitChartHooks();
+      CBCompat.ChartAPI.RegisterHookOnChartStart(RaiseChartStartEvent);
+      CBCompat.ChartAPI.RegisterHookOnNoteSpawn(RaiseNoteSpawnEvent);
+      CBCompat.ChartAPI.RegisterHookOnSectionStart(RaiseSectionStartEvent);
     }
   }
 
@@ -62,11 +51,11 @@ public static class ChartAPI {
     OnChartStart?.Invoke(self, args);
   }
 
-  public static void RaiseNoteSpawnEvent(object self, NoteEventArgsCB args) {
+  public static void RaiseNoteSpawnEvent(object self, CBCompat.ChartAPI.NoteEventArgsCB args) {
     OnNoteSpawn?.Invoke(self, args);
   }
 
-  public static void RaiseSectionStartEvent(object self, SectionEventArgsCB args) {
+  public static void RaiseSectionStartEvent(object self, CBCompat.ChartAPI.SectionEventArgsCB args) {
     OnSectionStart?.Invoke(self, args);
   }
 
@@ -83,7 +72,7 @@ public static class ChartAPI {
     var args = new NoteEventArgs { note = note };
     OnNoteSpawn?.Invoke(self, args);
     note = args.note;
-
+    UnityEngine.Debug.Log("Note spawned");
     orig(self, note);
   }
 
@@ -91,7 +80,7 @@ public static class ChartAPI {
     var args = new SectionEventArgs { section = section };
     OnSectionStart?.Invoke(self, args);
     section = args.section;
-
+    UnityEngine.Debug.Log("Section started");
     orig(self, section);
   }
 }

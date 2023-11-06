@@ -67,10 +67,6 @@ public static class Locking {
 
   internal static void Init() {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(Locking)}");
-    if (Evergreen.CurrentExecutable == Evergreen.Executable.CustomBattles) {
-      Evergreen.Log.LogWarning($"Skipping Evergreen {nameof(Locking)}: current executable is the Custom Battle launcher.");
-      return;
-    }
 
     On.SG.Leaderboard.Leaderboard.SaveScore += HookLockSaveScore;
     On.SteamAchievement.UnlockAchievement += HookLockAchievements;

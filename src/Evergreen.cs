@@ -35,14 +35,13 @@ public class Evergreen : BaseUnityPlugin {
 
     BattleAPI.Init();
     ChartAPI.Init();
-    Locking.Init();
+    if (CurrentExecutable == Executable.BaseGame) Locking.Init();
 
     Log.LogInfo("Evergreen loaded.");
   }
 
   private void Init() {
-    // Check if EverhoodModding namespace exists
-    if (Type.GetType("EverhoodModding.BattleInitializer") != null) CurrentExecutable = Executable.CustomBattles;
+    if (Type.GetType("Everhood.ModExternal.ChartReader, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null") != null) CurrentExecutable = Executable.CustomBattles;
     else CurrentExecutable = Executable.BaseGame;
     Log.LogInfo($"Evergreen is running on the {(CurrentExecutable == Executable.BaseGame ? "base game" : "custom battles launcher")}.");
   }
