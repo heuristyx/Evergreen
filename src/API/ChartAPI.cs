@@ -85,7 +85,6 @@ public static class ChartAPI
     var args = new NoteEventArgs { note = note };
     OnNoteSpawn?.Invoke(self, args);
     note = args.note;
-    UnityEngine.Debug.Log("Note spawned");
     orig(self, note);
   }
 
@@ -94,7 +93,6 @@ public static class ChartAPI
     var args = new SectionEventArgs { section = section };
     OnSectionStart?.Invoke(self, args);
     section = args.section;
-    UnityEngine.Debug.Log("Section started");
     orig(self, section);
   }
 }
