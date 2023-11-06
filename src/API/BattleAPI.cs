@@ -18,8 +18,6 @@ public static class BattleAPI
 
   private static int lastBattleID = 0;
 
-  private static bool audioClipLoaded = false;
-
   /// <summary>
   /// Invoked when the player takes damage.
   /// </summary>
