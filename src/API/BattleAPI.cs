@@ -9,8 +9,10 @@ namespace Evergreen;
 /// <summary>
 /// The Evergreen API for battle-related events.
 /// </summary>
-public static class BattleAPI {
-  public class DamageEventArgs : EventArgs {
+public static class BattleAPI
+{
+  public class DamageEventArgs : EventArgs
+  {
     public int damage { get; set; }
   }
 
@@ -73,13 +75,17 @@ public static class BattleAPI {
   /// </summary>
   public static event EventHandler OnShootDeflect;
 
-  internal static void Init() {
+  internal static void Init()
+  {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
-    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame) {
+    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame)
+    {
       On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoad;
       SceneManager.activeSceneChanged += HookOnBattleLeave;
-    } else {
+    }
+    else
+    {
       CBCompat.BattleAPI.RegisterHookOnBattleLoad(RaiseBattleStart);
     }
 
@@ -95,26 +101,31 @@ public static class BattleAPI {
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
   }
 
-  internal static void RaiseBattleStart(object sender, GameObject obj) {
+  internal static void RaiseBattleStart(object sender, GameObject obj)
+  {
     ChartAPI.audioClipLoaded = false;
     obj.AddComponent<BattleManager>();
     OnBattleStart?.Invoke(sender, EventArgs.Empty);
   }
 
-  internal static void RaiseBattleUpdate(object sender) {
+  internal static void RaiseBattleUpdate(object sender)
+  {
     OnBattleUpdate?.Invoke(sender, EventArgs.Empty);
   }
 
-  private static void HookOnBattleLeave(Scene from, Scene to) {
-    if (EverhoodGameData.battleID == 0 && lastBattleID > 0) {
+  private static void HookOnBattleLeave(Scene from, Scene to)
+  {
+    if (EverhoodGameData.battleID == 0 && lastBattleID > 0)
+    {
       lastBattleID = 0;
-      OnBattleLeave?.Invoke(null, EventArgs.Empty); 
+      OnBattleLeave?.Invoke(null, EventArgs.Empty);
     }
 
     if (lastBattleID < 0) lastBattleID = 999; // Frog special case
   }
 
-  private static void HookOnBattleLoad(On.Everhood.Battle.GameOverController.orig_Awake orig, Everhood.Battle.GameOverController self) {
+  private static void HookOnBattleLoad(On.Everhood.Battle.GameOverController.orig_Awake orig, Everhood.Battle.GameOverController self)
+  {
     RaiseBattleStart(self, self.gameObject);
 
     lastBattleID = EverhoodGameData.battleID;
@@ -123,19 +134,22 @@ public static class BattleAPI {
     orig(self);
   }
 
-  private static void HookOnBattleRetryBPC(On.Everhood.BattlePauseController.orig_Retry orig, BattlePauseController self) {
+  private static void HookOnBattleRetryBPC(On.Everhood.BattlePauseController.orig_Retry orig, BattlePauseController self)
+  {
     OnBattleRetry?.Invoke(self, EventArgs.Empty);
-    
+
     orig(self);
   }
 
-  private static void HookOnBattleRetryGOC(On.Everhood.Battle.GameOverController.orig_Retry orig, Everhood.Battle.GameOverController self) {
+  private static void HookOnBattleRetryGOC(On.Everhood.Battle.GameOverController.orig_Retry orig, Everhood.Battle.GameOverController self)
+  {
     OnBattleRetry?.Invoke(self, EventArgs.Empty);
-    
+
     orig(self);
   }
 
-  private static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage) {
+  private static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage)
+  {
     var args = new DamageEventArgs { damage = damage };
     OnTakeDamage?.Invoke(self, args);
     damage = args.damage;
@@ -143,7 +157,8 @@ public static class BattleAPI {
     orig(self, damage);
   }
 
-  private static void HookOnDealDamage(On.Everhood.Battle.BattleEnemy.orig_Damage orig, BattleEnemy self, int damage) {
+  private static void HookOnDealDamage(On.Everhood.Battle.BattleEnemy.orig_Damage orig, BattleEnemy self, int damage)
+  {
     var args = new DamageEventArgs { damage = damage };
     OnDealDamage?.Invoke(self, args);
     damage = args.damage;
@@ -151,37 +166,43 @@ public static class BattleAPI {
     orig(self, damage);
   }
 
-  private static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self) {
+  private static void HookOnLose(On.Everhood.Battle.BattleGameOverController.orig_GameOver orig, BattleGameOverController self)
+  {
     OnLose?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  private static void HookOnKill(On.Everhood.KillModeEvents.orig_NpcKilled orig, KillModeEvents self) {
+  private static void HookOnKill(On.Everhood.KillModeEvents.orig_NpcKilled orig, KillModeEvents self)
+  {
     OnKill?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  private static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self) {
+  private static void HookOnJump(On.Everhood.Battle.PlayerVerticalMovement.orig_Jump orig, PlayerVerticalMovement self)
+  {
     OnJump?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  private static void HookOnAbsorbNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbSuccess orig, AbsorbBehaviour self) {
+  private static void HookOnAbsorbNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbSuccess orig, AbsorbBehaviour self)
+  {
     OnAbsorbNote?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  private static void HookOnAbsorbTallNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbTallSuccess orig, AbsorbBehaviour self) {
+  private static void HookOnAbsorbTallNote(On.AbsorbBehaviour.orig_NotifyOnAbsorbTallSuccess orig, AbsorbBehaviour self)
+  {
     OnAbsorbNote?.Invoke(self, EventArgs.Empty);
 
     orig(self);
   }
 
-  private static void HookOnShootDeflect(On.Everhood.ShootDeflectiveProjectileEventCommand.orig_ShootDeflect orig, ShootDeflectiveProjectileEventCommand self, bool projectileDeflectedIsUnjumpable) {
+  private static void HookOnShootDeflect(On.Everhood.ShootDeflectiveProjectileEventCommand.orig_ShootDeflect orig, ShootDeflectiveProjectileEventCommand self, bool projectileDeflectedIsUnjumpable)
+  {
     OnShootDeflect?.Invoke(self, EventArgs.Empty);
 
     orig(self, projectileDeflectedIsUnjumpable);

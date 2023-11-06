@@ -1,16 +1,18 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Logging;
-using UnityEngine.Experimental.PlayerLoop;
 
 namespace Evergreen;
 
 [BepInPlugin(Guid, Name, Version)]
-public class Evergreen : BaseUnityPlugin {
+public class Evergreen : BaseUnityPlugin
+{
   public const string Guid = "com.heuristyx.plugins.evergreen";
   public const string Name = "Evergreen";
   public const string Version = "0.1.0";
-  public enum Executable {
+
+  public enum Executable
+  {
     BaseGame,
     CustomBattles
   };
@@ -21,7 +23,8 @@ public class Evergreen : BaseUnityPlugin {
 
   internal static ManualLogSource Log;
 
-  private void Awake() {
+  private void Awake()
+  {
     Log = BepInEx.Logging.Logger.CreateLogSource("Evergreen");
 
     PluginInfo = Info;
@@ -40,8 +43,10 @@ public class Evergreen : BaseUnityPlugin {
     Log.LogInfo("Evergreen loaded.");
   }
 
-  private void Init() {
-    if (Type.GetType("Everhood.ModExternal.ChartReader, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null") != null) CurrentExecutable = Executable.CustomBattles;
+  private void Init()
+  {
+    const string testType = "Everhood.ModExternal.ChartReader, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
+    if (Type.GetType(testType) != null) CurrentExecutable = Executable.CustomBattles;
     else CurrentExecutable = Executable.BaseGame;
     Log.LogInfo($"Evergreen is running on the {(CurrentExecutable == Executable.BaseGame ? "base game" : "custom battles launcher")}.");
   }

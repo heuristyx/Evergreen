@@ -8,30 +8,36 @@ using UnityEngine.UI;
 
 namespace Evergreen;
 
-public static class Modlist {
+public static class Modlist
+{
   private static ModlistUI UI = new ModlistUI();
   private static GameObject ModlistPanel;
   private static Button BackToMenuButton;
 
-  internal class ModlistUI : MonoBehaviour {
-    public void OpenModlistPanel() {
+  internal class ModlistUI : MonoBehaviour
+  {
+    public void OpenModlistPanel()
+    {
       ModlistPanel.transform.SetAsLastSibling();
       ModlistPanel.SetActive(true);
     }
   }
 
-  internal static void Init() {
+  internal static void Init()
+  {
     On.HomeUI.Awake += InitModlistUI;
   }
 
-  private static void InitModlistUI(On.HomeUI.orig_Awake orig, HomeUI self) {
+  private static void InitModlistUI(On.HomeUI.orig_Awake orig, HomeUI self)
+  {
     orig(self);
 
     MakeModPanel(self);
     InsertModButtonIntoMenu(self);
   }
 
-  private static void MakeModPanel(HomeUI homeUI) {
+  private static void MakeModPanel(HomeUI homeUI)
+  {
     // Modlist panel container
     ModlistPanel = new GameObject("Modlist Panel", typeof(ModlistUI));
     ModlistPanel.transform.SetParent(homeUI.transform.parent);
@@ -65,7 +71,8 @@ public static class Modlist {
     var btmText = BackToMenu.GetComponent<TextMeshProUGUI>();
     btmText.alignment = TextAlignmentOptions.Center;
     btmText.text = "Back to menu";
-    BackToMenuButton.onClick.AddListener(delegate() {
+    BackToMenuButton.onClick.AddListener(delegate ()
+    {
       homeUI.OpenHomeUI();
     });
     var cursor = BackToMenu.transform.GetChild(0).gameObject;
@@ -73,7 +80,8 @@ public static class Modlist {
     cursor.SetActive(true);
   }
 
-  private static void InsertModButtonIntoMenu(HomeUI homeUI) {
+  private static void InsertModButtonIntoMenu(HomeUI homeUI)
+  {
     var panel = homeUI.transform.Find("Panel");
     var quitButton = panel.Find("Quit");
     int i = quitButton.GetSiblingIndex() - 1;
@@ -86,7 +94,8 @@ public static class Modlist {
     ModlistButton.transform.localPosition = quitButton.localPosition;
     ModlistButton.transform.localScale = quitButton.localScale;
     ModlistButton.GetComponent<TextMeshProUGUI>().text = "Mods";
-    ModlistButton.GetComponent<Button>().onClick.AddListener(delegate() {
+    ModlistButton.GetComponent<Button>().onClick.AddListener(delegate ()
+    {
       UI.OpenModlistPanel();
       BackToMenuButton.Select();
     });
@@ -97,30 +106,33 @@ public static class Modlist {
 
     var buttons = GetButtons(panel.gameObject);
 
-    newAboveNav.selectOnUp = buttons[i-2];
+    newAboveNav.selectOnUp = buttons[i - 2];
     newAboveNav.selectOnDown = buttons[i];
 
-    newModlistNav.selectOnUp = buttons[i-1];
-    newModlistNav.selectOnDown = buttons[i+1];
+    newModlistNav.selectOnUp = buttons[i - 1];
+    newModlistNav.selectOnDown = buttons[i + 1];
 
     newBelowNav.selectOnUp = buttons[i];
-    newBelowNav.selectOnDown = buttons[i+2];
+    newBelowNav.selectOnDown = buttons[i + 2];
 
-    buttons[i-1].navigation = newAboveNav;
+    buttons[i - 1].navigation = newAboveNav;
     buttons[i].navigation = newModlistNav;
-    buttons[i+1].navigation = newBelowNav;
+    buttons[i + 1].navigation = newBelowNav;
   }
 
-  private static List<Button> GetButtons(GameObject parent) {
+  private static List<Button> GetButtons(GameObject parent)
+  {
     var l = new List<Button>();
-    for (int i = 0; i < parent.transform.childCount; i++) {
+    for (int i = 0; i < parent.transform.childCount; i++)
+    {
       var btn = parent.transform.GetChild(i).GetComponent<Button>();
       if (btn != null) l.Add(btn);
     }
     return l;
   }
 
-  private static List<string> GenerateModList() {
+  private static List<string> GenerateModList()
+  {
     var infos = Chainloader.PluginInfos;
     return infos.Select(i => $"{i.Value.Metadata.Name} ({i.Value.Metadata.Version})").ToList();
   }

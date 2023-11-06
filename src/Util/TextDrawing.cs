@@ -9,14 +9,16 @@ namespace Evergreen;
 /// <summary>
 /// Draw text on screen.
 /// </summary>
-public static class TextDrawing {
+public static class TextDrawing
+{
   internal static GameObject EvergreenCanvas;
   private static GameObject Console;
   private static GameObject VersionObj;
   private static List<string> ConsoleHistory = new List<string>();
   private static int MaxHistoryCount = 5;
 
-  public enum TextAlignmentOptions {
+  public enum TextAlignmentOptions
+  {
     TopLeft = TMPro.TextAlignmentOptions.TopLeft,
     Top = TMPro.TextAlignmentOptions.Top,
     TopRight = TMPro.TextAlignmentOptions.TopRight,
@@ -28,7 +30,8 @@ public static class TextDrawing {
     BottomRight = TMPro.TextAlignmentOptions.BottomRight,
   }
 
-  internal static void Init() {
+  internal static void Init()
+  {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(TextDrawing)}");
 
     EvergreenCanvas = new GameObject("EvergreenCanvas");
@@ -47,18 +50,21 @@ public static class TextDrawing {
   /// <summary>
   /// Set the Active state of the Evergreen ingame console.
   /// </summary>
-  public static void ToggleConsole(bool state) {
+  public static void ToggleConsole(bool state)
+  {
     Console.SetActive(state);
   }
 
   /// <summary>
   /// Get the GameObject of the Evergreen canvas.
   /// </summary>
-  public static GameObject GetCanvas() {
+  public static GameObject GetCanvas()
+  {
     return EvergreenCanvas;
   }
 
-  private static void ShowEvergreenVer(Scene current, Scene next) {
+  private static void ShowEvergreenVer(Scene current, Scene next)
+  {
     if (next.name == "MainMenu") VersionObj.SetActive(true);
     else VersionObj.SetActive(false);
   }
@@ -66,7 +72,8 @@ public static class TextDrawing {
   /// <summary>
   /// Display text in the Evergreen ingame console.
   /// </summary>
-  public static void DrawToConsole(string text) {
+  public static void DrawToConsole(string text)
+  {
     if (ConsoleHistory.Count >= MaxHistoryCount) ConsoleHistory.RemoveAt(0);
     ConsoleHistory.Add(text);
 
@@ -76,7 +83,8 @@ public static class TextDrawing {
   /// <summary>
   /// Draw text on-screen.
   /// </summary>
-  public static GameObject DrawText(string text, float x, float y, float fontSize = 36) { // screen is ~2000 units wide and ~1400 units tall
+  public static GameObject DrawText(string text, float x, float y, float fontSize = 36)
+  { // screen is ~2000 units wide and ~1400 units tall
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
     tm.alignment = TMPro.TextAlignmentOptions.Center;
@@ -91,7 +99,8 @@ public static class TextDrawing {
   /// <summary>
   /// Draw text on-screen.
   /// </summary>
-  public static GameObject DrawText(string text, TextAlignmentOptions alignment, float fontSize = 36) {
+  public static GameObject DrawText(string text, TextAlignmentOptions alignment, float fontSize = 36)
+  {
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
     tm.alignment = (TMPro.TextAlignmentOptions)alignment;
@@ -101,7 +110,8 @@ public static class TextDrawing {
     return to;
   }
 
-  private static GameObject CreateTextObject() {
+  private static GameObject CreateTextObject()
+  {
     var to = new GameObject("Custom Textbox");
     var tm = to.AddComponent<TextMeshProUGUI>();
     tm.font = Assets.pixelFont;
