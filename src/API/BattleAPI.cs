@@ -1,6 +1,9 @@
 using System;
+using System.Reflection;
 using Everhood;
 using Everhood.Battle;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -77,7 +80,7 @@ public static class BattleAPI
   {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(BattleAPI)}");
 
-    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame)
+    if (Evergreen.IsBaseGame)
     {
       On.Everhood.Battle.GameOverController.Awake += HookOnBattleLoad;
       SceneManager.activeSceneChanged += HookOnBattleLeave;
@@ -85,6 +88,17 @@ public static class BattleAPI
     else
     {
       CBCompat.BattleAPI.RegisterHookOnBattleLoad(RaiseBattleStart);
+    }
+
+    // Patch to guarantee chart is synced to audio
+    if (Evergreen.IsBaseGame)
+    {
+      IL.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookChartReaderBehaviour;
+      IL.Everhood.Chart.ChartReader.JumpPosChange += HookJumpPosChange;
+    }
+    else
+    {
+      CBCompat.BattleAPI.FixChartReaderBehaviour();
     }
 
     On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;
@@ -97,6 +111,34 @@ public static class BattleAPI
     On.AbsorbBehaviour.NotifyOnAbsorbSuccess += HookOnAbsorbNote;
     On.AbsorbBehaviour.NotifyOnAbsorbTallSuccess += HookOnAbsorbTallNote;
     On.Everhood.ShootDeflectiveProjectileEventCommand.ShootDeflect += HookOnShootDeflect;
+  }
+
+  private static void HookChartReaderBehaviour(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.Chart.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.Chart.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
+  }
+
+  private static void HookJumpPosChange(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.Chart.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.Chart.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
   }
 
   internal static void RaiseBattleStart(object sender, GameObject obj)

@@ -39,7 +39,7 @@ public static class ChartAPI
   {
     Evergreen.Log.LogInfo($"Loading Evergreen {nameof(ChartAPI)}");
 
-    if (Evergreen.CurrentExecutable == Evergreen.Executable.BaseGame)
+    if (Evergreen.IsBaseGame)
     {
       On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
       On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
