@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Reflection;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
 
 namespace CBCompat;
 
@@ -14,15 +17,50 @@ public static class ChartAPI
     public ChartNoteSectionData.Data.Section section { get; set; }
   }
 
+  public static void FixChartReaderBehaviour()
+  {
+    IL.Everhood.ModExternal.ChartReader.ChartReaderBehaviour += HookChartReaderBehaviour;
+    IL.Everhood.ModExternal.ChartReader.JumpPosChange += HookJumpPosChange;
+  }
+
+  private static void HookChartReaderBehaviour(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.ModExternal.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.ModExternal.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
+  }
+
+  private static void HookJumpPosChange(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.ModExternal.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.ModExternal.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
+  }
+
   public static void RegisterHookOnChartStart(Action<object, EventArgs> callback)
   {
-    On.Everhood.ModExternal.ChartReader.ChartReaderBehaviour += (
-      On.Everhood.ModExternal.ChartReader.orig_ChartReaderBehaviour orig,
+    On.Everhood.ModExternal.ChartReader.StartChartReader += (
+      On.Everhood.ModExternal.ChartReader.orig_StartChartReader orig,
       Everhood.ModExternal.ChartReader self
     ) =>
     {
-      // to-do: chart start logic
       orig(self);
+
+      callback(self, EventArgs.Empty);
     };
   }
 

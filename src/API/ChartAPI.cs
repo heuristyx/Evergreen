@@ -1,5 +1,9 @@
 using System;
+using System.Reflection;
 using Everhood.Chart;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using Sirenix.Serialization;
 
 namespace Evergreen;
 
@@ -41,7 +45,7 @@ public static class ChartAPI
 
     if (Evergreen.IsBaseGame)
     {
-      On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartUpdate;
+      On.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookOnChartStart;
       On.Everhood.Chart.ChartReader.Release += (On.Everhood.Chart.ChartReader.orig_Release orig, Everhood.Chart.ChartReader cr) => { audioClipLoaded = false; };
       On.Everhood.Chart.NoteEventHandler.OnNote += HookOnNoteSpawn;
       On.Everhood.Chart.SectionEventHandler.OnSection += HookOnSectionStart;
@@ -52,6 +56,45 @@ public static class ChartAPI
       CBCompat.ChartAPI.RegisterHookOnNoteSpawn(RaiseNoteSpawnEvent);
       CBCompat.ChartAPI.RegisterHookOnSectionStart(RaiseSectionStartEvent);
     }
+
+    // Patch to guarantee chart is synced to audio
+    if (Evergreen.IsBaseGame)
+    {
+      IL.Everhood.Chart.ChartReader.ChartReaderBehaviour += HookChartReaderBehaviour;
+      IL.Everhood.Chart.ChartReader.JumpPosChange += HookJumpPosChange;
+    }
+    else
+    {
+      CBCompat.ChartAPI.FixChartReaderBehaviour();
+    }
+  }
+
+  private static void HookChartReaderBehaviour(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.Chart.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.Chart.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
+  }
+
+  private static void HookJumpPosChange(ILContext il)
+  {
+    var c = new ILCursor(il);
+
+    var m_setSongPosition = typeof(Everhood.Chart.ChartReader).GetMethod("set__songposition", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+    c.TryGotoNext(MoveType.After, i => i.MatchCall(m_setSongPosition));
+    c.Emit(OpCodes.Ldarg_0);
+    c.EmitDelegate<Action<Everhood.Chart.ChartReader>>((cr) =>
+    {
+      cr._songposition = cr.audioSource.time;
+    });
   }
 
   public static void RaiseChartStartEvent(object self, EventArgs args)
@@ -69,12 +112,12 @@ public static class ChartAPI
     OnSectionStart?.Invoke(self, args);
   }
 
-  private static void HookOnChartUpdate(On.Everhood.Chart.ChartReader.orig_ChartReaderBehaviour orig, Everhood.Chart.ChartReader self)
+  private static void HookOnChartStart(On.Everhood.Chart.ChartReader.orig_ChartReaderBehaviour orig, Everhood.Chart.ChartReader self)
   {
     if (self._started && !audioClipLoaded)
     {
       audioClipLoaded = true;
-      OnChartStart?.Invoke(self, EventArgs.Empty);
+      RaiseChartStartEvent(self, EventArgs.Empty);
     }
 
     orig(self);

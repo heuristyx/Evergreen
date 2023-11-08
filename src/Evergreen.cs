@@ -35,11 +35,11 @@ public class Evergreen : BaseUnityPlugin
     Assets.Init();
 
     TextDrawing.Init();
-    if (CurrentExecutable == Executable.BaseGame) Modlist.Init();
+    if (IsBaseGame) Modlist.Init();
 
     BattleAPI.Init();
     ChartAPI.Init();
-    if (CurrentExecutable == Executable.BaseGame) Locking.Init();
+    if (IsBaseGame) Locking.Init();
 
     Log.LogInfo("Evergreen loaded.");
   }
