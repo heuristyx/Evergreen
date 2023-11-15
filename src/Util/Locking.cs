@@ -42,7 +42,7 @@ public static class Locking
   }
 
   /// <summary>
-  /// Add a lock.
+  /// Adds a lock.
   /// </summary>
   public static void AddLock(Lock _lock)
   {
@@ -50,7 +50,7 @@ public static class Locking
   }
 
   /// <summary>
-  /// Remove a lock.
+  /// Removes a lock.
   /// </summary>
   public static void RemoveLock(Lock _lock)
   {
@@ -58,7 +58,7 @@ public static class Locking
   }
 
   /// <summary>
-  /// Get all currently registered locks.
+  /// Gets all currently registered locks.
   /// </summary>
   public static List<Lock> GetLocks()
   {
@@ -66,7 +66,7 @@ public static class Locking
   }
 
   /// <summary>
-  /// Get all currently registered locks of the given <c>LockType</c>.
+  /// Gets all currently registered locks of the given <c>LockType</c>.
   /// </summary>
   public static List<Lock> GetLocks(LockType lockType)
   {

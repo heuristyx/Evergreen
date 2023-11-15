@@ -6,13 +6,12 @@ using UnityEngine.SceneManagement;
 
 namespace Evergreen;
 
-/// <summary>
-/// Draw text on screen.
-/// </summary>
 public static class TextDrawing
 {
   internal static GameObject EvergreenCanvas;
+  public static TMP_InputField inputField;
   private static GameObject Console;
+  private static GameObject ConsoleLog;
   private static GameObject VersionObj;
   private static List<string> ConsoleHistory = new List<string>();
   private static int MaxHistoryCount = 5;
@@ -40,23 +39,50 @@ public static class TextDrawing
     GameObject.DontDestroyOnLoad(EvergreenCanvas);
     EvergreenCanvas.GetComponent<RectTransform>().FullScreen(true);
 
-    Console = DrawText("", TextAlignmentOptions.TopRight);
-    Console.SetActive(false);
-    VersionObj = DrawText($"{Evergreen.Name} ver. {Evergreen.Version}", TextAlignmentOptions.TopLeft);
+    InitConsole();
+    Evergreen.OnToggleDebugMode += (self, state) => { Console.SetActive(state); };
+
+    VersionObj = DrawText($"{Evergreen.Name} ver. {Evergreen.Version}", TextAlignmentOptions.TopLeft, 40);
     VersionObj.SetActive(false);
     SceneManager.activeSceneChanged += ShowEvergreenVer;
   }
 
-  /// <summary>
-  /// Set the Active state of the Evergreen ingame console.
-  /// </summary>
-  public static void ToggleConsole(bool state)
+  private static void InitConsole()
   {
-    Console.SetActive(state);
+    Console = new GameObject("Console");
+    Console.transform.SetParent(EvergreenCanvas.transform);
+    Console.AddComponent<RectTransform>().FullScreen(true);
+    ConsoleLog = DrawText("", TextAlignmentOptions.TopRight);
+    ConsoleLog.transform.SetParent(Console.transform);
+    var consoleInput = new GameObject("Console input");
+    consoleInput.transform.SetParent(Console.transform);
+    var rect = consoleInput.AddComponent<RectTransform>();
+    rect.anchorMin = new Vector2(.85f, .65f);
+    rect.anchorMax = new Vector2(1f, 1f);
+    var inputText = new GameObject("Console input text");
+    inputText.transform.SetParent(consoleInput.transform);
+    var inputPlaceholder = new GameObject("Console input placeholder");
+    inputPlaceholder.transform.SetParent(consoleInput.transform);
+    inputField = consoleInput.AddComponent<TMP_InputField>();
+    inputField.onSubmit.AddListener(Commands.SendCommand);
+    var text = inputText.AddComponent<TextMeshProUGUI>();
+    text.font = Assets.pixelFont;
+    text.fontSize = 30;
+    text.color = Color.gray;
+    inputField.textComponent = text;
+    var placeholder = inputPlaceholder.AddComponent<TextMeshProUGUI>();
+    placeholder.font = Assets.pixelFont;
+    placeholder.color = Color.gray;
+    placeholder.fontSize = 30;
+    placeholder.text = "/...";
+    placeholder.GetComponent<RectTransform>().offsetMax = new Vector2(1000f, placeholder.GetComponent<RectTransform>().offsetMax.y);
+    inputField.placeholder = placeholder;
+
+    Console.SetActive(false);
   }
 
   /// <summary>
-  /// Get the GameObject of the Evergreen canvas.
+  /// Gets the GameObject of the Evergreen canvas.
   /// </summary>
   public static GameObject GetCanvas()
   {
@@ -70,20 +96,20 @@ public static class TextDrawing
   }
 
   /// <summary>
-  /// Display text in the Evergreen ingame console.
+  /// Displays text in the Evergreen ingame console.
   /// </summary>
   public static void DrawToConsole(string text)
   {
     if (ConsoleHistory.Count >= MaxHistoryCount) ConsoleHistory.RemoveAt(0);
     ConsoleHistory.Add(text);
 
-    Console.GetComponent<TextMeshProUGUI>().text = string.Join("\n", ConsoleHistory.ToArray());
+    ConsoleLog.GetComponent<TextMeshProUGUI>().text = string.Join("\n", ConsoleHistory.ToArray());
   }
 
   /// <summary>
-  /// Draw text on-screen.
+  /// Draws text on-screen. Returns the parent <c>GameObject</c>
   /// </summary>
-  public static GameObject DrawText(string text, float x, float y, float fontSize = 36)
+  public static GameObject DrawText(string text, float x, float y, float fontSize = 30)
   { // screen is ~2000 units wide and ~1400 units tall
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
@@ -97,9 +123,9 @@ public static class TextDrawing
   }
 
   /// <summary>
-  /// Draw text on-screen.
+  /// Draws text on-screen. Returns the parent <c>GameObject</c>
   /// </summary>
-  public static GameObject DrawText(string text, TextAlignmentOptions alignment, float fontSize = 36)
+  public static GameObject DrawText(string text, TextAlignmentOptions alignment, float fontSize = 30)
   {
     var to = CreateTextObject();
     var tm = to.GetComponent<TextMeshProUGUI>();
