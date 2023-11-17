@@ -74,7 +74,7 @@ public static class TextDrawing
     placeholder.font = Assets.pixelFont;
     placeholder.color = Color.gray;
     placeholder.fontSize = 30;
-    placeholder.text = "/...";
+    placeholder.text = "Type \"/\"...";
     placeholder.GetComponent<RectTransform>().offsetMax = new Vector2(1000f, placeholder.GetComponent<RectTransform>().offsetMax.y);
     inputField.placeholder = placeholder;
 

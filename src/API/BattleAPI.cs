@@ -90,6 +90,7 @@ public static class BattleAPI
     On.Everhood.BattlePauseController.Retry += HookOnBattleRetryBPC;
     On.Everhood.Battle.GameOverController.Retry += HookOnBattleRetryGOC;
     On.Everhood.Battle.BattlePlayer.Damage += HookOnTakeDamage;
+    On.Everhood.TopDown.PlayerHealth.Damage += HookOnTakeDamageTopDown;
     On.Everhood.Battle.BattleEnemy.Damage += HookOnDealDamage;
     On.Everhood.Battle.BattleGameOverController.GameOver += HookOnLose;
     On.Everhood.KillModeEvents.NpcKilled += HookOnKill;
@@ -147,6 +148,15 @@ public static class BattleAPI
   }
 
   private static void HookOnTakeDamage(On.Everhood.Battle.BattlePlayer.orig_Damage orig, BattlePlayer self, int damage)
+  {
+    var args = new DamageEventArgs { damage = damage };
+    OnTakeDamage?.Invoke(self, args);
+    damage = args.damage;
+
+    orig(self, damage);
+  }
+
+  private static void HookOnTakeDamageTopDown(On.Everhood.TopDown.PlayerHealth.orig_Damage orig, Everhood.TopDown.PlayerHealth self, int damage)
   {
     var args = new DamageEventArgs { damage = damage };
     OnTakeDamage?.Invoke(self, args);
